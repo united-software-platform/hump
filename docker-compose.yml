@@ -1,0 +1,36 @@
+services:
+  claude:
+    # Опубликованный образ окружения агента: собирает и проверяет его пайплайн репозитория
+    # kit'а, проект получает готовый образ из реестра. Секции сборки здесь нет — исходник
+    # образа в поставку не входит, и описание сборки ссылалось бы на отсутствующий файл.
+    #
+    # Имя и тег вынесены в переменные: закрепить конкретную версию или подставить свою сборку
+    # можно в .env, не редактируя этот файл, — правка пережила бы не всякую переустановку kit'а.
+    image: ${SDD_KIT_IMAGE:-ghcr.io/united-software-platform/sdd-developer-kit}:${SDD_KIT_IMAGE_TAG:-latest}
+    # Отдельный compose-профиль: `docker compose up` сервисов окружения агента не поднимает
+    profiles: ["claude"]
+    # Команда по умолчанию — сам агент; аргумент после имени сервиса её заменяет (bash, git, …)
+    command: claude
+    working_dir: ${PROJECT_DIR:-/app}
+    env_file: .env
+    # Имя хоста для раннера целей make: на Linux host.docker.internal сам не резолвится
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      # Консолидирует весь конфиг (.claude.json, .credentials.json)
+      # в смонтированный каталог аккаунта, иначе авторизация слетает
+      CLAUDE_CONFIG_DIR: ${CLAUDE_CONFIG_DIR:-/home/claude/.claude}
+
+    volumes:
+      - .:${PROJECT_DIR:-/app}                                             # рабочее дерево проекта
+      # Профиль задаёт каталог аккаунта: он берётся из .env или из переменной окружения
+      # команды запуска сессии. Значение по умолчанию намеренно указывает на несуществующий
+      # подкаталог: без профиля путь схлопнулся бы в каталог всех аккаунтов и агент увидел бы
+      # чужие профили — вместо этого он получает пустой каталог конфигурации
+      - ${CLAUDE_ACCOUNTS_DIR:-.claude-accounts}/${CLAUDE_PROFILE:-__no_profile__}:${CLAUDE_CONFIG_DIR:-/home/claude/.claude}
+      - ${PROJECT_DIR:-/app}/${CLAUDE_ACCOUNTS_DIR:-.claude-accounts}      # анонимный том прячет чужие профили внутри контейнера
+      - ${SSH_DIR:-.ssh}:${CONTAINER_SSH_DIR:-/home/claude/.ssh}           # ключи для работы с репозиторием
+      # Файл секретов скрыт от агента: значения приезжают через env_file,
+      # сам .env внутри контейнера пустой. compose читает его на хосте — маскировка не мешает
+      - /dev/null:${PROJECT_DIR:-/app}/.env:ro
+

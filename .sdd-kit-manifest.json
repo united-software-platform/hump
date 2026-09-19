@@ -1,0 +1,20 @@
+{
+  "kit_version": "1.3.0",
+  "kit_ref": "main",
+  "installed_at": "2026-09-19T16:33:53Z",
+  "files": [
+    {"path": "AGENTS.md", "sha256": "a87d41b0a1a654d4707f3be208fbfb81ac6afaaa504d44a1a96061b1f4265bde"},
+    {"path": "CLAUDE.md", "sha256": "cc15e2dc7621067f5ac7095b9b5c86e6ce0a00d1f5fce012ff1682db5d994827"},
+    {"path": "docker-compose.yml", "sha256": "aae31e36282e72f282c9b3ec7e7b339a94a41943d7947b78ed2e87240bd22f10"},
+    {"path": ".env.example", "sha256": "df7480020a149db4d49e0a66ba1268d7145080369f69e1427ae480c574cf551c"},
+    {"path": "Makefile", "sha256": "b70cf646dba4212b1e92401679c0042e39f3370fcb71d1d2d83d42f5c5bfacda"},
+    {"path": "rules/documentation-rules.md", "sha256": "968f95053249bf08833be73abb7277316aefbdeb6dccd4d18950fefb916adbf9"},
+    {"path": "rules/git-rules.md", "sha256": "814fd60b969b44cddd0f8267fe07249bb7b6cb871f234719426217b1f078415b"},
+    {"path": "rules/makefile-rules.md", "sha256": "b2d2468b54e76f3ea1f73d2bf99cd19aecada178a74dcd478c6469e58e4fdbde"},
+    {"path": "rules/reading-rules.md", "sha256": "65eea522b0b9b37983ea480014d048139dc3fbfbe11dfd60e3ebb8f21dd1bc9e"},
+    {"path": "rules/terminology.md", "sha256": "96ce5ca93fd722adb088c88d46571559b3076e0a4125e7b2e2493b4df5f1e95a"},
+    {"path": "tools/host-runner/call.sh", "sha256": "028bb72ac5d94f6bcf6035d042a80c2b6313d88a4ec2296c6b9125e6776ae245"},
+    {"path": "tools/host-runner/README.md", "sha256": "8f888709b6d2e14cee1efccd9e5c5c1dc3baed5afd49b7a9f4b7d3bcf120ca88"},
+    {"path": "tools/host-runner/runner.py", "sha256": "49a38d7e72f49d3d8bd5b9e4f999ff7e4c0c46cd80e8ef1ee60283c2388d1fc4"}
+  ]
+}
