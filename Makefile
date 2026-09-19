@@ -1,5 +1,5 @@
 .PHONY: help init init-host init-env init-dirs init-gitignore init-ssh-key init-ssh-config \
-	openspec-init
+	openspec-init hump-up hump-down hump-logs hump-check
 
 .DEFAULT_GOAL := help
 
@@ -50,14 +50,20 @@ init-host: ## Хостовая подготовка: .env, каталоги, SSH
 	@$(MAKE) --no-print-directory init-ssh-key
 	@$(MAKE) --no-print-directory init-ssh-config
 
-# Файл секретов. Существующий .env не перезаписывается: в нём заполненные пользователем значения,
-# а .env.example — только умолчания.
-init-env: ## Создать .env из .env.example
+# Файлы секретов. Существующие .env и .env.claude не перезаписываются: в них заполненные
+# пользователем значения, а *.example — только умолчания.
+init-env: ## Создать .env и .env.claude из примеров
 	@if [ -f .env ]; then \
 		echo "  .env уже существует — оставлен без изменений"; \
 	else \
 		cp .env.example .env; \
 		echo "  создан .env из .env.example"; \
+	fi
+	@if [ -f .env.claude ]; then \
+		echo "  .env.claude уже существует — оставлен без изменений"; \
+	else \
+		cp .env.claude.example .env.claude; \
+		echo "  создан .env.claude из .env.claude.example"; \
 	fi
 
 # Каталоги ключей и профилей аккаунтов. Права 700 на .ssh — требование ssh-клиента: с более
@@ -140,3 +146,28 @@ openspec-init: ## Развернуть инструменты SDD: openspec init
 	mkdir -p "$$accounts/$$profile"
 	docker compose --profile claude run --rm -T claude \
 		openspec init --tools claude --language ru
+
+# Сервисы продукта описаны отдельным compose-файлом: docker-compose.yml принадлежит kit'у
+# и описывает только окружение агента. Цели ниже не ждут терминала и завершаются сами —
+# иначе они не годились бы для белого списка host-runner'а.
+hump_compose = docker compose -f docker-compose.hump.yml
+
+hump-up: ## Поднять шлюз LiteLLM
+	$(hump_compose) up -d
+
+hump-down: ## Остановить шлюз LiteLLM
+	$(hump_compose) down
+
+# Без -f: режим слежения не завершился бы сам и удерживал бы однопоточный раннер.
+# Состояние контейнера печатается рядом с логами: пустой лог сам по себе не отличает
+# «контейнера нет» от «процесс ещё не писал в вывод».
+hump-logs: ## Показать состояние и последние логи сервисов Hump
+	@$(hump_compose) ps -a
+	@$(hump_compose) logs --tail 30
+
+# Проверка запускается на хосте, а не в контейнере агента: ключи берутся из .env, который
+# от агента скрыт намеренно — так мастер-ключ не попадает в его окружение.
+hump-check: ## Проверить шлюз LiteLLM: живость, готовность и маршруты
+	@set -a; . ./.env; set +a; \
+		HUMP_GATEWAY_URL="http://localhost:$${LITELLM_PORT:-4000}" \
+		sh tools/litellm/check.sh

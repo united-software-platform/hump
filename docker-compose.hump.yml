@@ -1,0 +1,58 @@
+# Сервисы продукта Hump. Файл намеренно отделён от docker-compose.yml окружения агента:
+# тот поставлен SDD kit'ом и записан в .sdd-kit-manifest.json с контрольной суммой, поэтому
+# правка в нём расходится с манифестом при обновлении kit'а.
+services:
+  # Локальные модели. Порт наружу не публикуется: обращается к Ollama только шлюз по внутренней
+  # сети compose, и открытый порт на хосте лишь расширил бы поверхность доступа.
+  #
+  # Работа идёт на процессоре. Для видеокарты NVIDIA сервису добавляют резервирование устройств
+  # (deploy.resources.reservations.devices) и требуется NVIDIA Container Toolkit на хосте.
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama}:${OLLAMA_IMAGE_TAG:-latest}
+    # Веса моделей переживают пересоздание контейнера: иначе каждый up качал бы их заново
+    volumes:
+      - ollama-models:/root/.ollama
+    restart: unless-stopped
+
+  # Разовая загрузка модели: контейнер просит сервер Ollama скачать веса и завершается.
+  # Запускается при каждом up и при уже загруженной модели отрабатывает вхолостую.
+  ollama-pull:
+    image: ${OLLAMA_IMAGE:-ollama/ollama}:${OLLAMA_IMAGE_TAG:-latest}
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    # Имя модели совпадает с маршрутом hump-local в config/litellm.yaml — менять надо в обоих местах
+    command: ["pull", "qwen3.5:0.8b"]
+    restart: "no"
+
+  litellm:
+    # Шлюз LLM-запросов: OpenAI-совместимый API поверх облачных провайдеров и локальных моделей.
+    # Образ и тег вынесены в переменные: закрепить версию можно в .env, не редактируя этот файл.
+    image: ${LITELLM_IMAGE:-docker.litellm.ai/berriai/litellm}:${LITELLM_IMAGE_TAG:-latest}
+    depends_on:
+      - ollama
+    # Ключи и адреса маршрутов приезжают в контейнер значениями из .env; сам файл в репозиторий
+    # не попадает. Подстановки ${...} выше читаются compose'ом из того же .env, но другим
+    # механизмом — это не дубль.
+    #
+    # Адрес Ollama блоком environment не дублируется: подстановка ${OLLAMA_API_BASE:-...} берёт
+    # значение сначала из окружения процесса, запустившего compose, и одноимённая переменная
+    # хоста молча перекрыла бы .env — маршрут ушёл бы не туда, а файлы репозитория выглядели бы
+    # настроенными верно. env_file такой подстановке не подвержен, поэтому адрес маршрута задан
+    # ровно в одном месте — в .env, и переменная там обязательна: без значения LiteLLM молча
+    # берёт localhost:11434, то есть сам контейнер шлюза.
+    env_file: .env
+
+    # Остаётся ради варианта с Ollama на хосте: на Linux host.docker.internal сам не резолвится
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${LITELLM_PORT:-4000}:4000"
+    volumes:
+      - ./config/litellm.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml"]
+    restart: unless-stopped
+
+volumes:
+  ollama-models:

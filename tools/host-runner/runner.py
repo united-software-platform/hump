@@ -29,7 +29,17 @@ from urllib.parse import urlsplit
 #
 # Цели сборки образа здесь нет и быть не может: образ собирает пайплайн репозитория kit'а,
 # а проект получает его из реестра — в Makefile такой цели нет.
-ALLOWED_TARGETS = frozenset({"init", "openspec-init", "help"})
+ALLOWED_TARGETS = frozenset(
+    {
+        "init",
+        "openspec-init",
+        "help",
+        "hump-up",
+        "hump-down",
+        "hump-logs",
+        "hump-check",
+    }
+)
 
 # Цели выполняются в корне репозитория: там лежит Makefile окружения
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
