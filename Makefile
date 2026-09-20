@@ -66,18 +66,22 @@ init-env: ## Создать .env и .env.claude из примеров
 		echo "  создан .env.claude из .env.claude.example"; \
 	fi
 
-# Каталоги ключей и профилей аккаунтов. Права 700 на .ssh — требование ssh-клиента: с более
-# широкими правами он отказывается работать с лежащим внутри ключом.
-init-dirs: ## Создать каталоги .ssh и .claude-accounts
-	@mkdir -p .ssh .claude-accounts
+# Каталоги ключей, профилей аккаунтов и данных сервисов. Права 700 на .ssh — требование
+# ssh-клиента: с более широкими правами он отказывается работать с лежащим внутри ключом.
+#
+# Каталоги data/ создаются заранее, чтобы владельцем стал пользователь проекта: каталог,
+# созданный docker'ом под точку монтирования, принадлежит root, и работать с ним с хоста
+# без sudo уже нельзя.
+init-dirs: ## Создать каталоги .ssh, .claude-accounts и data
+	@mkdir -p .ssh .claude-accounts data/ollama-models data/postgres
 	@chmod 700 .ssh
 
 # Записи в .gitignore. Каждая добавляется однократно: повторный прогон находит её точным
 # совпадением строки и пропускает. Перевод строки дописывается перед записью, если файл им
 # не заканчивается, — иначе запись склеилась бы с последней строкой.
-init-gitignore: ## Добавить в .gitignore .env, .ssh/ и .claude-accounts/
+init-gitignore: ## Добавить в .gitignore .env, .ssh/, .claude-accounts/ и data/
 	@touch .gitignore
-	@for entry in .env .ssh/ .claude-accounts/; do \
+	@for entry in .env .ssh/ .claude-accounts/ data/; do \
 		grep -qxF "$$entry" .gitignore >/dev/null 2>&1 && continue; \
 		[ -s .gitignore ] && [ -n "$$(tail -c 1 .gitignore)" ] && printf '\n' >> .gitignore; \
 		printf '%s\n' "$$entry" >> .gitignore; \
