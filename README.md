@@ -1,6 +1,6 @@
 # Hump
 
-[![версия SDD Developer Kit из .sdd-kit-manifest.json](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Funited-software-platform%2FHump%2Fmain%2F.sdd-kit-manifest.json&search=%22kit_version%22%3A%5Cs%2A%22%28%5B%5Cd.%5D%2B%29%22&replace=v%241&label=sdd%20developer%20kit&color=5B4FCF&logo=docker&logoColor=white)](https://github.com/united-software-platform/sdd-developer-kit/pkgs/container/sdd-developer-kit)
+[![версия SDD Developer Kit из .sdd-kit-manifest.json](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Funited-software-platform%2Fhump%2Fmain%2F.sdd-kit-manifest.json&search=%22kit_version%22%3A%5Cs%2A%22%28%5B%5Cd.%5D%2B%29%22&replace=v%241&label=sdd%20developer%20kit&color=5B4FCF&logo=docker&logoColor=white)](https://github.com/united-software-platform/sdd-developer-kit/pkgs/container/sdd-developer-kit)
 [![LiteLLM](https://img.shields.io/badge/LiteLLM-LLM%20API-1DA1F2)](https://www.litellm.ai/)
 [![Ollama](https://img.shields.io/badge/Ollama-локальные%20модели-000000?logo=ollama&logoColor=white)](https://ollama.com/)
 
